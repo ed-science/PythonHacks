@@ -15,7 +15,7 @@ BODY_TEXT = ("Hey Hi...\r\n"
              "This email was sent with Amazon SES using the "
              "AWS SDK for Python (Boto)."
             )
-            
+
 # The HTML body of the email.
 BODY_HTML = """<html>
 <head></head>
@@ -47,11 +47,11 @@ try:
         Message={
             'Body': {
                 'Html': {
-    
+
                     'Data': BODY_HTML
                 },
                 'Text': {
-    
+
                     'Data': BODY_TEXT
                 },
             },

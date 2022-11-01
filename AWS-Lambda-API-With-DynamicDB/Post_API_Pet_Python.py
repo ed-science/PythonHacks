@@ -75,22 +75,19 @@ class PetShop:
             }
 
 def lambda_handler(event, context):
-    if event:
-        pet_Object =  PetShop()
-        if event['tasktype']  == "create":
-            create_result =  pet_Object.Create_data(event['data'])
-            return create_result
-        elif event['tasktype']  == "read":
-            read_result =  pet_Object.Read_data(event['data'])
-            return read_result
-        elif event['tasktype']  == "update":
-            update_result =  pet_Object.Update_data(event['data'])
-            return update_result
-        elif event['tasktype']  == "delete":
-            delete_result =  pet_Object.Delete_data(event['data'])
-            return delete_result
-        else :
-            return {
-                'statusCode': '404',
-                'body': 'Not found'
-            }
+    if not event:
+        return
+    pet_Object =  PetShop()
+    if event['tasktype']  == "create":
+        return pet_Object.Create_data(event['data'])
+    elif event['tasktype']  == "read":
+        return pet_Object.Read_data(event['data'])
+    elif event['tasktype']  == "update":
+        return pet_Object.Update_data(event['data'])
+    elif event['tasktype']  == "delete":
+        return pet_Object.Delete_data(event['data'])
+    else:
+        return {
+            'statusCode': '404',
+            'body': 'Not found'
+        }

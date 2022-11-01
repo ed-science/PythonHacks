@@ -16,8 +16,10 @@ t = TicToc() #create instance of class
 input_rate = 44100
 target_rate = 32000
 defaultframes = 1024
+
+
 class textcolors:
-    if not os.name == 'nt':
+    if os.name != 'nt':
         blue = '\033[94m'
         green = '\033[92m'
         warning = '\033[93m'
@@ -29,6 +31,7 @@ class textcolors:
         warning = ''
         fail = ''
         end = ''
+
 recorded_frames = []
 device_info = {}
 useloopback = False
@@ -45,7 +48,7 @@ except IOError:
 
 #Select Device
 print (textcolors.blue + "Available devices:\n" + textcolors.end)
-for i in range(0, p.get_device_count()):
+for i in range(p.get_device_count()):
     info = p.get_device_info_by_index(i)
     print (textcolors.green + str(info["index"]) + textcolors.end + ": \t %s \n \t %s \n" % (info["name"], p.get_host_api_info_by_index(info["hostApi"])["name"]))
     if default_device_index == -1:
@@ -53,11 +56,17 @@ for i in range(0, p.get_device_count()):
 
 #Handle no devices available
 if default_device_index == -1:
-    print (textcolors.fail + "No device available. Quitting." + textcolors.end)
+    print(f"{textcolors.fail}No device available. Quitting.{textcolors.end}")
     exit()
 
 #Get input or default
-device_id = int(input("Choose device [" + textcolors.blue + str(default_device_index) + textcolors.end + "]: ") or default_device_index)
+device_id = int(
+    input(
+        f"Choose device [{textcolors.blue}{str(default_device_index)}{textcolors.end}]: "
+    )
+    or default_device_index
+)
+
 print ("")
 
 #Get device info
@@ -65,20 +74,22 @@ try:
     device_info = p.get_device_info_by_index(device_id)
 except IOError:
     device_info = p.get_device_info_by_index(default_device_index)
-    print (textcolors.warning + "Selection not available, using default." + textcolors.end)
+    print(
+        f"{textcolors.warning}Selection not available, using default.{textcolors.end}"
+    )
+
 
 #Choose between loopback or standard mode
 is_input = device_info["maxInputChannels"] > 0
 is_wasapi = (p.get_host_api_info_by_index(device_info["hostApi"])["name"]).find("WASAPI") != -1
 if is_input:
     print (textcolors.blue + "Selection is input using standard mode.\n" + textcolors.end)
+elif is_wasapi:
+    useloopback = True;
+    print (textcolors.green + "Selection is output. Using loopback mode.\n" + textcolors.end)
 else:
-    if is_wasapi:
-        useloopback = True;
-        print (textcolors.green + "Selection is output. Using loopback mode.\n" + textcolors.end)
-    else:
-        print (textcolors.fail + "Selection is input and does not support loopback mode. Quitting.\n" + textcolors.end)
-        exit()
+    print (textcolors.fail + "Selection is input and does not support loopback mode. Quitting.\n" + textcolors.end)
+    exit()
 
 polly = boto3.client('polly', region_name = 'us-west-2')
 translate = boto3.client(service_name='translate', region_name='us-west-2', use_ssl=True)
@@ -127,44 +138,42 @@ class MyEventHandler(TranscriptResultStreamHandler):
         # In this case, we're simply printing the finished 
         results = transcript_event.transcript.results
         print("firing outputs..", results)
-        if len(results) > 0:
-            if len(results[0].alternatives) > 0:
-                transcript = results[0].alternatives[0].transcript
-                print("transcript:", transcript)
+        if len(results) > 0 and len(results[0].alternatives) > 0:
+            transcript = results[0].alternatives[0].transcript
+            print("transcript:", transcript)
 
-                print(results[0].channel_id)
-                if hasattr(results[0], "is_partial") and results[0].is_partial == False:
-                    t.tic()
-                    #translate only 1 channel. the other channel is a duplicate
-                    if results[0].channel_id == "ch_0":
-                        trans_result = translate.translate_text(
-                            Text = transcript,
-                            SourceLanguageCode = params['source_language'],
-                            TargetLanguageCode = params['target_language']
-                        )
-                        print("translated text:" + trans_result.get("TranslatedText"))
-                        text = trans_result.get("TranslatedText")
+            print(results[0].channel_id)
+            if hasattr(results[0], "is_partial") and results[0].is_partial == False:
+                t.tic()
+                #translate only 1 channel. the other channel is a duplicate
+                if results[0].channel_id == "ch_0":
+                    trans_result = translate.translate_text(
+                        Text = transcript,
+                        SourceLanguageCode = params['source_language'],
+                        TargetLanguageCode = params['target_language']
+                    )
+                    print("translated text:" + trans_result.get("TranslatedText"))
+                    text = trans_result.get("TranslatedText")
 
-                        #For doing accuracy measurements. Remove when not required.
-                        with open("transcribe.txt", "a", encoding='utf-8') as f:
-                            f.write(transcript + "\n")
+                    #For doing accuracy measurements. Remove when not required.
+                    with open("transcribe.txt", "a", encoding='utf-8') as f:
+                        f.write(transcript + "\n")
 
-                        with open("translate.txt", "a", encoding='utf-8') as f:
-                            f.write(text + "\n")
+                    with open("translate.txt", "a", encoding='utf-8') as f:
+                        f.write(text + "\n")
 
-                        await loop.run_in_executor(executor, aws_polly_tts, text)
-                    t.toc("full result sent to translate and polly :")
+                    await loop.run_in_executor(executor, aws_polly_tts, text)
+                t.toc("full result sent to translate and polly :")
 
         count += 1
         total_latency += t.tocvalue()
         running_average = total_latency/count
-        if (count % 1000 == 0) == True:
+        if count % 1000 == 0:
             print("Average Time so far: ", running_average)
 
 def stream_data(stream):
     """Consumes a stream in chunks to produce the response's output'"""
     print("Streaming started...")
-    chunk = 1024
     if stream:
     # Note: Closing the stream is important as the service throttles on
     # the number of parallel connections. Here we are using
@@ -178,6 +187,7 @@ def stream_data(stream):
                     output = True,
                     )
 
+        chunk = 1024
         #this is a blocking call..
         while True:
             data = stream.read(chunk)
@@ -244,7 +254,13 @@ async def transcribe():
 
 
 direction = 1
-direction = int(input("Choose source and target language to translate. 1 for en to zh, 2 for zh to en [" + textcolors.blue + str(direction) + textcolors.end + "]: ") or default_device_index)
+direction = int(
+    input(
+        f"Choose source and target language to translate. 1 for en to zh, 2 for zh to en [{textcolors.blue}{direction}{textcolors.end}]: "
+    )
+    or default_device_index
+)
+
 params = {}
 
 if direction == 1:

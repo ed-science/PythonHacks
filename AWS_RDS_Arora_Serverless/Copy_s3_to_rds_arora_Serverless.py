@@ -6,14 +6,14 @@ import csv
 
 ## This is the tool
 def lambda_handler(event, context):
-    print("event collected is {}".format(event))
-    for record in event['Records'] :
+    print(f"event collected is {event}")
+    for record in event['Records']:
         s3_bucket = record['s3']['bucket']['name']
-        print("Bucket name is {}".format(s3_bucket))
+        print(f"Bucket name is {s3_bucket}")
         s3_key = record['s3']['object']['key']
-        print("Bucket key name is {}".format(s3_key))
-        from_path = "/tmp/{}".format(s3_key)
-        print("from path {}".format(from_path))
+        print(f"Bucket key name is {s3_key}")
+        from_path = f"/tmp/{s3_key}"
+        print(f"from path {from_path}")
 
         #initiate s3 client 
         s3 = boto3.client('s3')
@@ -21,7 +21,7 @@ def lambda_handler(event, context):
         #Download object to the file    
         s3.download_file(s3_bucket, s3_key, from_path)
         print("donwloaded successfully....")
-        
+
         dbname = os.getenv('dbname')
         host = os.getenv('host')
         user = os.getenv('user')
@@ -32,24 +32,25 @@ def lambda_handler(event, context):
                                        port = '5432',
                                        user = user,
                                        password = password)
-                                       
+
         print('after connection....')
         curs = connection.cursor()
         print('after cursor....')
         # opening the CSV file
         with open(from_path, mode ='r')as file:
-   
+           
             # reading the CSV file
             csvFile = csv.reader(file)
- 
+
             # displaying the contents of the CSV file
             for lines in csvFile:
                 print(type(lines))
                 print(lines[0])
                 print(lines[1])
                 print(lines[2])
-                querry = "INSERT INTO cqpocsredshiftdemo (industry_name_ANZSIC,rme_size_grp,variables) VALUES ('{}', '{}', '{}');".format(lines[0], lines[1], lines[2])
-                print("query is {}".format(querry))
+                querry = f"INSERT INTO cqpocsredshiftdemo (industry_name_ANZSIC,rme_size_grp,variables) VALUES ('{lines[0]}', '{lines[1]}', '{lines[2]}');"
+
+                print(f"query is {querry}")
                 print('after querry....')
                 curs.execute(querry)
         connection.commit()

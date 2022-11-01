@@ -16,7 +16,7 @@ def send_email():
                 "This email was sent with Amazon SES using the "
                 "AWS SDK for Python (Boto)."
                 )
-                
+
     # The HTML body of the email.
     BODY_HTML = """<html>
     <head></head>
@@ -48,11 +48,11 @@ def send_email():
             Message={
                 'Body': {
                     'Html': {
-        
+
                         'Data': BODY_HTML
                     },
                     'Text': {
-        
+
                         'Data': BODY_TEXT
                     },
                 },

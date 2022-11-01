@@ -14,10 +14,10 @@ images=[('1.jpg','APJ Kalam'),
       ('9.jpg','Sunil Chhetri')
       ]
 
-# Iterate through list to upload objects to S3   
+# Iterate through list to upload objects to S3
 for image in images:
     file = open(image[0],'rb')
-    object = s3.Object('facecollectionbucket','index/'+ image[0])
+    object = s3.Object('facecollectionbucket', f'index/{image[0]}')
     ret = object.put(Body=file,
                     Metadata={'FullName':image[1]}
                     )

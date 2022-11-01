@@ -16,12 +16,10 @@ rekognition = boto3.client('rekognition')
 
 def index_faces(bucket, key):
 
-    response = rekognition.index_faces(
-        Image={"S3Object":
-            {"Bucket": bucket,
-            "Name": key}},
-            CollectionId="family_collection")
-    return response
+    return rekognition.index_faces(
+        Image={"S3Object": {"Bucket": bucket, "Name": key}},
+        CollectionId="family_collection",
+    )
     
 def update_index(tableName,faceId, fullName):
     response = dynamodb.put_item(
@@ -47,11 +45,11 @@ def lambda_handler(event, context):
 
         # Calls Amazon Rekognition IndexFaces API to detect faces in S3 object 
         # to index faces into specified collection
-        
+
         response = index_faces(bucket, key)
-        
+
         # Commit faceId and full name object metadata to DynamoDB
-        
+
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             faceId = response['FaceRecords'][0]['Face']['FaceId']
 
@@ -66,5 +64,5 @@ def lambda_handler(event, context):
         return response
     except Exception as e:
         print(e)
-        print("Error processing object {} from bucket {}. ".format(key, bucket))
+        print(f"Error processing object {key} from bucket {bucket}. ")
         raise e

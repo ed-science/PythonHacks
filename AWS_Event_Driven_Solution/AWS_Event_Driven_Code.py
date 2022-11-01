@@ -9,8 +9,9 @@ def send_email(accountId, bucketName):
     AWS_REGION = "us-east-1"
 
     # The subject line for the email.
-    SUBJECT = 'Resource Creation Notification..!! S3 bucket name :'+bucketName+' and Account ID is : '+accountId
-    
+    SUBJECT = f'Resource Creation Notification..!! S3 bucket name :{bucketName} and Account ID is : {accountId}'
+
+        
 
     # The email body for recipients with non-HTML email clients.
     BODY_TEXT = ("Hi There...\r\n"
@@ -18,7 +19,7 @@ def send_email(accountId, bucketName):
                 "Thanks and Regards\n"
                 "AWS-EVENT-DRIVEN-AUTOMATION"
                 )
-                
+
     # The HTML body of the email.
     BODY_HTML = """<html>
     <head></head>
@@ -52,11 +53,11 @@ def send_email(accountId, bucketName):
             Message={
                 'Body': {
                     'Html': {
-        
+
                         'Data': BODY_HTML
                     },
                     'Text': {
-        
+
                         'Data': BODY_TEXT
                     },
                 },

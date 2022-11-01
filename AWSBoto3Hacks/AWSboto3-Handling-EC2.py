@@ -7,18 +7,17 @@ import json
 def json_datetime_serializer(obj):
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
-    raise TypeError ("Type %s not serializable" % type(obj))
+    raise TypeError(f"Type {type(obj)} not serializable")
 
 ## Create Key pair
 def Create_EC2KeyPair(AWS_REGION):
     try:
         ec2_response = boto3.resource('ec2', region_name=AWS_REGION)
-        result_keypair = ec2_response.create_key_pair(
-                                    KeyName='cqpocs_key',
-                                    DryRun=False,
-                                    KeyType='rsa',
-                                )
-        if result_keypair:
+        if result_keypair := ec2_response.create_key_pair(
+            KeyName='cqpocs_key',
+            DryRun=False,
+            KeyType='rsa',
+        ):
             print("Key pair created successfull..!")
     except Exception as e:
         logging.error(e)

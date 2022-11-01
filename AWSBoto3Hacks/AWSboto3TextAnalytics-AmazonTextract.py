@@ -37,7 +37,7 @@ doc = Document(response)
 print ('------------- Print Form detected text ------------------------------')
 for page in doc.pages:
     for field in page.form.fields:
-        print("Key: {}, Value: {}".format(field.key, field.value))
+        print(f"Key: {field.key}, Value: {field.value}")
 
 
 
@@ -52,9 +52,9 @@ response = textractmodule.analyze_document(
     FeatureTypes=["TABLES"])
 doc = Document(response)
 print ('------------- Print Table detected text ------------------------------')
+itemName  = ""
 for page in doc.pages:
     for table in page.tables:
         for r, row in enumerate(table.rows):
-            itemName  = ""
             for c, cell in enumerate(row.cells):
-                print("Table[{}][{}] = {}".format(r, c, cell.text))
+                print(f"Table[{r}][{c}] = {cell.text}")

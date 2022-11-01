@@ -45,9 +45,9 @@ def create_key_pair():
 def create_aws_vpc():
     ec2_client = boto3.client("ec2", region_name="us-east-1")
     vpc = ec2_client.create_vpc( CidrBlock='172.16.0.0/16' )
-    print ("Successfully created vpc details are -  {}".format(vpc))
+    print(f"Successfully created vpc details are -  {vpc}")
     subnet = ec2_client.create_subnet(CidrBlock = '172.16.2.0/24', VpcId= vpc['Vpc']['VpcId'])
-    print("Successfully created subnet details are -  {}".format(subnet))
+    print(f"Successfully created subnet details are -  {subnet}")
     return subnet['Subnet']['SubnetId']
 
 
