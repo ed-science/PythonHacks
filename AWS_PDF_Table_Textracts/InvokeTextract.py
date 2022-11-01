@@ -53,19 +53,19 @@ def ProcessDocument(s3_bucket, s3_key):
         print("Exception happend message is: ", exception)
         return False
 def lambda_handler(event, context):
-    print("event collected is {}".format(event))
-    for record in event['Records'] :
+    print(f"event collected is {event}")
+    for record in event['Records']:
         s3_bucket = record['s3']['bucket']['name']
-        print("Bucket name is {}".format(s3_bucket))
+        print(f"Bucket name is {s3_bucket}")
         s3_key = record['s3']['object']['key']
-        print("Bucket key name is {}".format(s3_key))
-        from_path = "s3://{}/{}".format(s3_bucket, s3_key)
-        print("from path {}".format(from_path))
-        TextractResult = ProcessDocument(s3_bucket, s3_key)
-        if TextractResult :
-            print("job id returned..") 
-            TagResults = TagS3ObjectWithJobId(s3_bucket, s3_key, TextractResult)
-            if TagResults :
+        print(f"Bucket key name is {s3_key}")
+        from_path = f"s3://{s3_bucket}/{s3_key}"
+        print(f"from path {from_path}")
+        if TextractResult := ProcessDocument(s3_bucket, s3_key):
+            print("job id returned..")
+            if TagResults := TagS3ObjectWithJobId(
+                s3_bucket, s3_key, TextractResult
+            ):
                 print("Tagging successfully completed")
                 return TextractResult
             else:

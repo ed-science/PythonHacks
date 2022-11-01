@@ -16,7 +16,7 @@ def get_temp_sts_tokens():
     try:
         response = sts_client.get_session_token( DurationSeconds=900)
     except Exception as e:
-        print("error occured and error is {}".format(e))
+        print(f"error occured and error is {e}")
     else:
         return response
       
@@ -31,14 +31,13 @@ def invoke_lambda_url(sts_response):
         }
         response = requests.request("POST", url, headers=headers, data=payload)
     except Exception as e:
-        print("error occured while invoking lambda and error is {}".format(e))
+        print(f"error occured while invoking lambda and error is {e}")
     else:
-         return response
+        return response
 
 sts_tkn = get_temp_sts_tokens()
 print(sts_tkn)
-result =  invoke_lambda_url(sts_tkn)
-if result:
- print("results retrived is at below..")
- print(result.text)
+if result := invoke_lambda_url(sts_tkn):
+    print("results retrived is at below..")
+    print(result.text)
 

@@ -7,8 +7,8 @@ def detect_labels(photo, bucket):
     response = client.detect_labels(Image={'S3Object':{'Bucket':bucket,'Name':photo}},
         MaxLabels=10)
 
-    print('Detected labels for ' + photo) 
-    print()   
+    print(f'Detected labels for {photo}')
+    print()
     for label in response['Labels']:
         print ("Label: " + label['Name'])
         print ("Confidence: " + str(label['Confidence']))
@@ -34,7 +34,7 @@ def main():
     photo='Doha.jpg'
     bucket='amazonrekognition-cqpocs'
     label_count=detect_labels(photo, bucket)
-    print("Labels detected: " + str(label_count))
+    print(f"Labels detected: {str(label_count)}")
 
 
 if __name__ == "__main__":

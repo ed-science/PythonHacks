@@ -20,34 +20,33 @@ def PoliceData(policestrg):
         if 'Side Seite des Rades' in policestrg :
             return policestrg.replace("Side Seite des Rades", "")
         return policestrg
-    except Exception as exception :
-        print("Exception in GetTableFromTextractResult and error is {} ".format(exception))
+    except Exception as exception:
+        print(f"Exception in GetTableFromTextractResult and error is {exception} ")
 
 def GetResults(jobId):
-        maxResults = 1000
-        paginationToken = None
-        finished = False
-        pages = []
+    maxResults = 1000
+    paginationToken = None
+    finished = False
+    pages = []
 
-        while finished == False:
-            response = None
-            if paginationToken == None:
-                response = textract.get_document_analysis(JobId=jobId,MaxResults=maxResults)
-            else:
-                response = textract.get_document_analysis(JobId=jobId,MaxResults=maxResults,NextToken=paginationToken)
-            pages.append(response)
-            print('Document Detected.')
-            if 'NextToken' in response:
-                paginationToken = response['NextToken']
-            else:
-                finished = True
-        pages = json.dumps(pages)
-        return pages
+    while not finished:
+        response = None
+        if paginationToken is None:
+            response = textract.get_document_analysis(JobId=jobId,MaxResults=maxResults)
+        else:
+            response = textract.get_document_analysis(JobId=jobId,MaxResults=maxResults,NextToken=paginationToken)
+        pages.append(response)
+        print('Document Detected.')
+        if 'NextToken' in response:
+            paginationToken = response['NextToken']
+        else:
+            finished = True
+    return json.dumps(pages)
 
 def UploadResultToS3Bucket(jobId, data):
     try:
         print("Inside upload results to S3 bucket..")
-        dynamicfilename = jobId +".json"
+        dynamicfilename = f"{jobId}.json"
         print("Dynamic file name is :", dynamicfilename)
         local_file_path = "/tmp/textractresult.json"
         with open(local_file_path, 'w') as fp:
@@ -57,8 +56,8 @@ def UploadResultToS3Bucket(jobId, data):
         print("file uploaded successfully..")
         os.remove(local_file_path)
         print("file deleted after upload to s3..")
-    except Exception as exception :
-        print("Exception in upload to s3 bucket and error is {} ".format(exception))
+    except Exception as exception:
+        print(f"Exception in upload to s3 bucket and error is {exception} ")
 
 def GetFromTextractResult(pages):
     try:
@@ -74,16 +73,18 @@ def GetFromTextractResult(pages):
             print(date_data.key.text)
             print(date_data.value.text)
             if str(wagen_number.value.text) and str(date_data.value.text):
-                formdata = {}
-                formdata[str(wagen_number.key.text)] = str(wagen_number.value.text)
-                formdata[str(date_data.key.text)] = str(date_data.value.text)
+                formdata = {
+                    str(wagen_number.key.text): str(wagen_number.value.text),
+                    str(date_data.key.text): str(date_data.value.text),
+                }
+
                 i +=1
         if i > 0:
             print("wagon number and date found")
             Table.append(formdata)
         return True
-    except Exception as exception :
-        print("Exception in GetTableFromTextractResult and error is {} ".format(exception))
+    except Exception as exception:
+        print(f"Exception in GetTableFromTextractResult and error is {exception} ")
         return False
 
 def GetTableTextractResult(pages, jobId):
@@ -93,31 +94,32 @@ def GetTableTextractResult(pages, jobId):
         for page in doc.pages:
             for table in page.tables:
                 if (page.tables).index(table) == 1:
-                    for r, row in enumerate(table.rows):
+                    for row in table.rows:
                         if (table.rows).index(row) > 1:
-                            i = 0
-                            rowst = {}
-                            for c, cell in enumerate(row.cells):
-                                rowst[str((table.rows)[1].cells[i]).strip()] = PoliceData(str(cell)).strip()
-                                i +=1
+                            rowst = {
+                                str((table.rows)[1].cells[i])
+                                .strip(): PoliceData(str(cell))
+                                .strip()
+                                for i, cell in enumerate(row.cells)
+                            }
+
                             Table.append(rowst)
                     print(Table)
                     UploadResultToS3Bucket(jobId, Table)
         return True
-    except Exception as exception :
-        print("Exception in GetTableFromTextractResult and error is {} ".format(exception))
+    except Exception as exception:
+        print(f"Exception in GetTableFromTextractResult and error is {exception} ")
         return False
 
 def lambda_handler(event, context):
-    print("event collected from sqs is : {}".format(event))
+    print(f"event collected from sqs is : {event}")
     print("required eventbody is:", event['Records'][0]['body'])
     modifiedEvent = json.loads(event['Records'][0]['body'])
     qmessage = json.loads(modifiedEvent['Message'])
     print("Job ID: ",qmessage['JobId'])
     print("Job status is : ",qmessage['Status'])
-    if qmessage['Status'] == "SUCCEEDED" and qmessage['JobId'] :
-        result = GetResults(qmessage['JobId'])
-        if result:
+    if qmessage['Status'] == "SUCCEEDED" and qmessage['JobId']:
+        if result := GetResults(qmessage['JobId']):
             if GetFromTextractResult(result) :
                 print ("Date and wagonnumber added to list..")
                 if GetTableTextractResult(result, qmessage['JobId']) :

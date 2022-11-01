@@ -5,7 +5,10 @@ from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.compute import ComputeManagementClient
 import os
 
-print(f"Provisioning a virtual machine...some operations might take a minute or two.")
+print(
+    "Provisioning a virtual machine...some operations might take a minute or two."
+)
+
 
 # Acquire a credential object using CLI-based authentication.
 credential = AzureCliCredential()

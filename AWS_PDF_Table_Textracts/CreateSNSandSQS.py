@@ -13,25 +13,25 @@ def DeleteTopicandQueue(sqsQueueUrl, snsTopicArn):
 
 def CreateTopicandQueue():
     
-    millis = str(int(round(time.time() * 1000)))
+        millis = str(int(round(time.time() * 1000)))
 
-    # Create SNS topic
-    snsTopicName = "AmazonTextractTopic" + millis
-    topicResponse = sns.create_topic(Name=snsTopicName)
-    snsTopicArn = topicResponse['TopicArn']
+            # Create SNS topic
+        snsTopicName = f"AmazonTextractTopic{millis}"
+        topicResponse = sns.create_topic(Name=snsTopicName)
+        snsTopicArn = topicResponse['TopicArn']
 
-    # create SQS queue
-    sqsQueueName = "AmazonTextractQueue" + millis
-    sqs.create_queue(QueueName=sqsQueueName)
-    sqsQueueUrl = sqs.get_queue_url(QueueName=sqsQueueName)['QueueUrl']
-    attribs = sqs.get_queue_attributes(QueueUrl=sqsQueueUrl,AttributeNames=['QueueArn'])['Attributes']
-    sqsQueueArn = attribs['QueueArn']
+            # create SQS queue
+        sqsQueueName = f"AmazonTextractQueue{millis}"
+        sqs.create_queue(QueueName=sqsQueueName)
+        sqsQueueUrl = sqs.get_queue_url(QueueName=sqsQueueName)['QueueUrl']
+        attribs = sqs.get_queue_attributes(QueueUrl=sqsQueueUrl,AttributeNames=['QueueArn'])['Attributes']
+        sqsQueueArn = attribs['QueueArn']
 
-    # Subscribe SQS queue to SNS topic
-    sns.subscribe(TopicArn=snsTopicArn,Protocol='sqs',Endpoint=sqsQueueArn)
+        # Subscribe SQS queue to SNS topic
+        sns.subscribe(TopicArn=snsTopicArn,Protocol='sqs',Endpoint=sqsQueueArn)
 
-    # Authorize SNS to write SQS queue
-    policy = """{{
+        # Authorize SNS to write SQS queue
+        policy = """{{
                     "Version":"2012-10-17",
                     "Statement":[
                         {{
@@ -49,10 +49,9 @@ def CreateTopicandQueue():
                     ]
                     }}""".format(sqsQueueArn, snsTopicArn)
 
-    response = sqs.set_queue_attributes(QueueUrl=sqsQueueUrl,Attributes={'Policy': policy})
+        response = sqs.set_queue_attributes(QueueUrl=sqsQueueUrl,Attributes={'Policy': policy})
 
-    return snsTopicArn , sqsQueueUrl
+        return snsTopicArn , sqsQueueUrl
 
-result = CreateTopicandQueue()
-if result:
-   print("SNS ARN is :", result)
+if result := CreateTopicandQueue():
+        print("SNS ARN is :", result)

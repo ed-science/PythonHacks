@@ -13,4 +13,4 @@ def get_policy_body(arn, version_id=None):
 POLICY_ARN = "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk"
 body = get_policy_body(POLICY_ARN)
 
-print("Policy body: %s" % body)
+print(f"Policy body: {body}")

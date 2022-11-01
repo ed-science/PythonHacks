@@ -2,7 +2,7 @@ import boto3
 import json
 
 comprehend = boto3.client('comprehend')
-                
+
 DetectSentimenttext = "UK won the match yesterday.. hehe"
 print('Calling DetectSentiment')
 sentiment = json.dumps(comprehend.detect_sentiment(Text=DetectSentimenttext, LanguageCode='en'), sort_keys=True, indent=4)

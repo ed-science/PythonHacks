@@ -14,19 +14,19 @@ def processing(event):
         else:
             print("It not saturday today...")
             event['IsComplete'] = True
-        return event
-    else :
+    else:
         print("Iterations completed now... and count is : ", event['iterationcount'])
         print("In else it is saturday today...")
         event['IsComplete'] = True
-        return event
+
+    return event
 # Define Lambda function
 def lambda_handler(event, context):
     if 'iterationcount' in event.keys():
         print("In if lambda handler now..")
         event['iterationcount'] += 1
-        return processing(event)
-    else :
+    else:
         print("In else lambda handler now..")
         event['iterationcount'] = 1
-        return processing(event)
+
+    return processing(event)

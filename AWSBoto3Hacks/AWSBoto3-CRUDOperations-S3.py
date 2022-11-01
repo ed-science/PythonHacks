@@ -7,8 +7,7 @@ def list_bucket():
     # Create bucket
     try:
         s3 = boto3.client('s3')
-        response = s3.list_buckets()
-        if response:
+        if response := s3.list_buckets():
             print('Buckets exists..')
             for bucket in response['Buckets']:
                 print(f'  {bucket["Name"]}')
@@ -83,6 +82,7 @@ def delete_bucket(bucket):
 list_bucket()
 '''
 
+
 '''
 ## Calling Create Bucket
 result_create = create_bucket("s3boto3test1")
@@ -121,9 +121,7 @@ else:
 '''
 
 
-## Delete bucket
-result_deletebucket = delete_bucket("s3boto3test1")
-if result_deletebucket :
+if result_deletebucket := delete_bucket("s3boto3test1"):
     print("bucket deleted successfully..!")
 else:
     print("bucket delete failed..!")

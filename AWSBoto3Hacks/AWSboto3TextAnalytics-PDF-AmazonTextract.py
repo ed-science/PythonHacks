@@ -19,31 +19,28 @@ def CheckJobComplete(jobId):
     client = boto3.client('textract')
     response = client.get_document_text_detection(JobId=jobId)
     status = response["JobStatus"]
-    print("Job status: {}".format(status))
-    while(status == "IN_PROGRESS"):
+    print(f"Job status: {status}")
+    while (status == "IN_PROGRESS"):
         time.sleep(5)
         response = client.get_document_text_detection(JobId=jobId)
         status = response["JobStatus"]
-        print("Job status: {}".format(status))
+        print(f"Job status: {status}")
     return status
 
 def JobResults(jobId):
-    pages = []
     client = boto3.client('textract')
     response = client.get_document_text_detection(JobId=jobId)
- 
-    pages.append(response)
-    print("Resultset page recieved: {}".format(len(pages)))
+
+    pages = [response]
+    print(f"Resultset page recieved: {len(pages)}")
     nextToken = None
-    if('NextToken' in response):
+    if ('NextToken' in response):
         nextToken = response['NextToken']
-        while(nextToken):
+        while nextToken:
             response = client.get_document_text_detection(JobId=jobId, NextToken=nextToken)
             pages.append(response)
-            print("Resultset page recieved: {}".format(len(pages)))
-            nextToken = None
-            if('NextToken' in response):
-                nextToken = response['NextToken']
+            print(f"Resultset page recieved: {len(pages)}")
+            nextToken = response['NextToken'] if ('NextToken' in response) else None
     return pages
 
 # S3 Document Data
@@ -52,7 +49,7 @@ documentName = "aws-overview.pdf"
 
 # Function invokes
 jobId = InvokeTextDetectJob(s3BucketName, documentName)
-print("Started job with id: {}".format(jobId))
+print(f"Started job with id: {jobId}")
 if(CheckJobComplete(jobId)):
     response = JobResults(jobId)
     for resultPage in response:
